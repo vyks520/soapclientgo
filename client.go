@@ -1,6 +1,7 @@
 package soapclientgo
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/xml"
 	"errors"
@@ -150,7 +151,7 @@ func (c client) GenSOAPXml(
 	</soap12:Body>
 </soap12:Envelope>`
 	}
-	return fmt.Sprintf(soapBodyXml, methodName, nameSpace, reqParamsXml, methodName), nil
+	return fmt.Sprintf(soapBodyXml, methodName, XMLEscape(nameSpace), reqParamsXml, methodName), nil
 }
 
 //参数转换XML字符串
@@ -159,12 +160,16 @@ func (c client) GenSoapParamsXlm(soapParams []ParamItem, prefix string) string {
 	for _, item := range soapParams {
 		attrs := ""
 		for attrKey, attrValue := range item.Attr {
-			if attrs == "" {
-
-			}
-			attrs += fmt.Sprintf(` %s="%s"`, attrKey, fmt.Sprint(attrValue))
+			attrs += fmt.Sprintf(` %s="%s"`, attrKey, XMLEscape(fmt.Sprint(attrValue)))
 		}
-		result += fmt.Sprintf("\n%s<%s%s>%s</%s>", prefix, item.Key, attrs, fmt.Sprint(item.Value), item.Key)
+		result += fmt.Sprintf("\n%s<%s%s>%s</%s>", prefix, item.Key, attrs, XMLEscape(fmt.Sprint(item.Value)), item.Key)
 	}
 	return result
+}
+
+//XML转义
+func XMLEscape(value string) string {
+	buf := bytes.NewBufferString("")
+	xml.Escape(buf, []byte(value))
+	return string(buf.Bytes())
 }
