@@ -12,20 +12,19 @@ type ParamItem struct {
 	Attr  map[string]interface{}
 }
 
-type ClientConfig struct {
-	Version  string //版本 1.1 or 1.2
-	ProxyURL string //代理
-	UserName string //授权验证用户名称
-	Password string //授权验证用户密码
+type Config struct {
+	Version   string //版本 1.1 or 1.2
+	UserName  string //授权验证用户名称
+	Password  string //授权验证用户密码
+	ProxyURL  string //代理
 }
 
 type client struct {
-	client        *http.Client //http请求客户端
-	version       string       //版本 1.1 or 1.2 默认为1.2
-	proxyURL      *url.URL     //代理地址
-	userName      string       //授权验证用户名称
-	password      string       //授权验证用户密码
-	authorization string       //认证字符串
+	client   *http.Client //http请求客户端
+	version  string       //版本 1.1 or 1.2 默认为1.2
+	proxyURL *url.URL     //代理地址
+	userName string       //授权验证用户名称
+	password string       //授权验证用户密码
 }
 
 type resEnvelope struct {

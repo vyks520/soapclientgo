@@ -2,17 +2,17 @@ package soapclientgo
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/xml"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-func NewClient(config ClientConfig) (*client, error) {
+func NewClient(config Config) (*client, error) {
 	soapClient := new(client)
 	//版本号
 	switch config.Version {
@@ -36,11 +36,9 @@ func NewClient(config ClientConfig) (*client, error) {
 	if config.UserName != "" {
 		soapClient.userName = config.UserName
 		soapClient.password = config.Password
-		authBase64 := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", soapClient.userName, soapClient.password)))
-		soapClient.authorization = fmt.Sprintf("Basic %s", authBase64)
 	}
 	//请求客户端初始化
-	if soapClient.authorization != "" {
+	if soapClient.proxyURL != nil {
 		soapClient.client = &http.Client{
 			Transport: &http.Transport{
 				Proxy: http.ProxyURL(soapClient.proxyURL),
@@ -59,8 +57,8 @@ func (c client) Request(reqURL string, reqBody string, soapAction string) ([]byt
 		errMsg := fmt.Sprintf("NewRequest error: %s", err.Error())
 		return nil, errors.New(errMsg)
 	}
-	if c.authorization != "" {
-		req.Header.Add("Authorization", c.authorization)
+	if c.userName != "" {
+		req.SetBasicAuth(c.userName, c.password)
 	}
 
 	//SOAP Header
@@ -83,6 +81,13 @@ func (c client) Request(reqURL string, reqBody string, soapAction string) ([]byt
 		return nil, errors.New(errMsg)
 	}
 
+	defer func() {
+		err := res.Body.Close()
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}()
+
 	//读取响应数据
 	resBytes, err := ioutil.ReadAll(res.Body)
 	var (
@@ -102,8 +107,8 @@ func (c client) Request(reqURL string, reqBody string, soapAction string) ([]byt
 	if resBytes != nil {
 		err = xml.Unmarshal(resBytes, &envelope)
 		if err != nil {
-			errMsg := fmt.Sprintf("WebService soap%s resonseEnvelope xmlUnmarshal fail: %d", c.version, err.Error())
-			return nil, errors.New(errMsg)
+			errMsg := fmt.Sprintf("WebService soap%s resonseEnvelope xmlUnmarshal fail: %s", c.version, err.Error())
+			return resBytes, errors.New(errMsg)
 		}
 	}
 

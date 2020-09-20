@@ -4,6 +4,7 @@
 
 天气预报Web Services调用示例
 
+
 ```go
 package main
 
@@ -15,11 +16,11 @@ import (
 
 func main() {
 	//SOAP客户端配置
-	soapConfig := soapclientgo.ClientConfig{
-		Version: "1.2", //版本号，留空默认1.2
-		//ProxyURL: "http://127.0.0.1:8888", //使用http代理，不使用留空
-		//UserName: "",                      //认证用户
-		//Password: "",                      //认证密码
+	soapConfig := soapclientgo.Config{
+		Version:  "1.1",                                      //版本号，留空默认1.2
+		//ProxyURL: "http://proxyName:proxyPwd@127.0.0.1:8888", //http代理，不使用留空
+		//UserName: "",                                         //认证用户
+		//Password: "",                                         //认证密码
 	}
 
 	//创建SOAP客户端
@@ -78,5 +79,6 @@ type SupportCityResponse struct {
 		String []string `xml:"string"`
 	} `xml:"getSupportCityResult"`
 }
+
 
 ```
